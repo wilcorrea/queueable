@@ -5,22 +5,22 @@ export default class Queueable {
   /**
    * @type {Array}
    */
-  queue = [];
+  queue = []
 
   /**
    * @type {number}
    */
-  index = 0;
+  index = 0
 
   /**
    * @type {number}
    */
-  total = 0;
+  total = 0
 
   /**
    * @type {number}
    */
-  counter = 0;
+  counter = 0
 
   /**
    * Queueable constructor
@@ -62,14 +62,14 @@ export default class Queueable {
       onFinish,
       onAbort,
       timeout
-    } = options;
-    this.onStart = onStart;
-    this.onWalk = onWalk;
-    this.onProgress = onProgress;
-    this.onEnd = onEnd;
-    this.onFinish = onFinish;
-    this.onAbort = onAbort;
-    this.timeout = timeout || 1;
+    } = options
+    this.onStart = onStart
+    this.onWalk = onWalk
+    this.onProgress = onProgress
+    this.onEnd = onEnd
+    this.onFinish = onFinish
+    this.onAbort = onAbort
+    this.timeout = timeout || 1
   }
 
   /**
@@ -77,94 +77,94 @@ export default class Queueable {
    * @returns {Queueable}
    */
   static build(options) {
-    return new this(options);
+    return new this(options)
   }
 
   /**
    * @param {Array} queue
    */
   run(queue) {
-    this.setQueue(queue);
+    this.setQueue(queue)
 
     // noinspection JSIgnoredPromiseFromCall
-    this.start();
+    this.start()
   }
 
   /**
    * @param {Array} queue
    */
   setQueue(queue) {
-    this.queue = queue.filter(() => true);
-    this.index = 0;
-    this.total = this.queue.length;
+    this.queue = queue.filter(() => true)
+    this.index = 0
+    this.total = this.queue.length
   }
 
   /**
    */
   async start() {
-    let goOn = true;
+    let goOn = true
     if (this.onStart) {
-      goOn = await this.onStart(this.queue, this.payload());
+      goOn = await this.onStart(this.queue, this.payload())
     }
     if (goOn === false) {
-      this.abort("start");
-      return;
+      this.abort('start')
+      return
     }
     // noinspection JSIgnoredPromiseFromCall
-    this.walk();
+    this.walk()
   }
 
   /**
    */
   async walk() {
-    let goOn = true;
-    const current = this.queue.shift();
-    this.index++;
+    let goOn = true
+    const current = this.queue.shift()
+    this.index++
     if (this.onWalk) {
-      goOn = await this.onWalk(current, this.payload());
-      this.counter++;
+      goOn = await this.onWalk(current, this.payload())
+      this.counter++
     }
     if (goOn !== false && this.onProgress) {
-      goOn = await this.onProgress(current, this.payload());
+      goOn = await this.onProgress(current, this.payload())
     }
     if (goOn === false) {
-      this.abort("walk");
-      return;
+      this.abort('walk')
+      return
     }
     if (this.index <= this.total - 1) {
-      this.next();
-      return;
+      this.next()
+      return
     }
     // noinspection JSIgnoredPromiseFromCall
-    this.end();
+    this.end()
   }
 
   /**
    */
   async end() {
-    let ended = true;
+    let ended = true
     if (this.onEnd) {
-      ended = await this.onEnd(this.payload(), this);
+      ended = await this.onEnd(this.payload(), this)
     }
 
     if (ended === false) {
-      this.next();
-      return;
+      this.next()
+      return
     }
     if (Array.isArray(ended)) {
       // noinspection JSCheckFunctionSignatures
-      this.setQueue(ended);
-      this.next();
-      return;
+      this.setQueue(ended)
+      this.next()
+      return
     }
-    this.finish();
+    this.finish()
   }
 
   /**
    */
   finish() {
     if (this.onFinish) {
-      this.onFinish(this.payload());
+      this.onFinish(this.payload())
     }
   }
 
@@ -173,7 +173,7 @@ export default class Queueable {
    */
   abort(step) {
     if (this.onAbort) {
-      this.onAbort(step, this.payload());
+      this.onAbort(step, this.payload())
     }
   }
 
@@ -181,7 +181,7 @@ export default class Queueable {
    * @returns {number}
    */
   next() {
-    return window.setTimeout(() => this.walk(), this.timeout);
+    return window.setTimeout(() => this.walk(), this.timeout)
   }
 
   /**
@@ -192,6 +192,6 @@ export default class Queueable {
       index: this.index,
       total: this.total,
       counter: this.counter
-    };
+    }
   }
 }
